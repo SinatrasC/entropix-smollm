@@ -3,6 +3,8 @@
 
 This script is a modified version with updated sampler, metric visualization and tuned entropy, varentropy tresholds of the original notebook from https://x.com/Dorialexander for smolLM and https://x.com/citizenhicks for llama 1B. Model/tokenizer params have been modified to support smollm-330m instead.
 
+To disable charts set ```debug=False``` in EntropixModel class
+
 <img width="650" alt="smolLMxEntropix" src="https://github.com/user-attachments/assets/a7b1834b-4cd3-490b-983d-2479dc53c9e2">
 
 ## Samples
