@@ -11,3 +11,5 @@ To disable charts set ```debug=False``` in EntropixModel class
 ![Q1](https://github.com/user-attachments/assets/adb455ef-d3bb-41b5-af14-815e048fded8)
 
 ![Q2](https://github.com/user-attachments/assets/062eaf0d-b0e1-4a21-98fe-b85adc8450e8)
+
+Original entropix implementation : @xjdr-alt/entropix
