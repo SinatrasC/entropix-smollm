@@ -1,9 +1,9 @@
 # entropix-smollm
 ## smolLM with Entropix sampler on pytorch
 
-This script is a modified version with updated sampler, metric visualization and tuned entropy, varentropy tresholds of the original notebook from https://x.com/Dorialexander for smolLM and https://x.com/citizenhicks for llama 1B. Model/tokenizer params have been modified to support smollm-330m instead.
+This script is a modified version with updated sampler, metric visualization and tuned entropy, varentropy thresholds of the original notebook from https://x.com/Dorialexander for smolLM and https://x.com/citizenhicks for llama 1B. Model/tokenizer params have been modified to support smollm-330m instead.
 
-There are 2 different SamplerConfigs included, both are experimental one of them is leaning into adaptive state as before and another one is forcing model to use different sampler states to let this agreement is removed from conditions. You can customize your sampler parameters using 3D chart easily even you can identify tokens by hovering them.
+There are 2 different SamplerConfigs included, both are experimental one of them is leaning into adaptive state as before and another one is forcing model to use different sampler states to let this agreement is removed from conditions. You can customize your sampler parameters using 3D chart easily even you can identify tokens by hovering them. You can also setup your EntropixConfig to utilize or remove some parts of the sampler for research purposes.
 
 To disable charts set ```debug=False``` in EntropixModel class
 
