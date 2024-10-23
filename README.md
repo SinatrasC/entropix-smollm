@@ -29,3 +29,44 @@ There is also threshold visualization to let users see how their responses fill 
 ![Q2](https://github.com/user-attachments/assets/062eaf0d-b0e1-4a21-98fe-b85adc8450e8)
 
 Original entropix implementation : @xjdr-alt/entropix
+
+## Install
+
+Clone the repo
+
+```sh
+git clone git@github.com:SinatrasC/entropix-smollm.git
+
+cd entropix-smollm
+```
+
+## With `rye`
+Install Rye [here](https://rye.astral.sh/) if you haven't already, and then:
+
+```sh
+rye sync
+```
+
+Run Jupyter
+
+```sh
+rye run jupyter-notebook smollm_entropix_torch.ipynb
+```
+
+
+### With `uv`
+Install uv [here](https://docs.astral.sh/uv/getting-started/installation/) if you haven't already (Rye installs it by default), and then:
+
+```sh
+uv venv --python 3.12
+
+source .venv/bin/activate
+
+uv pip install --project pyproject.toml .
+```
+
+and then:
+
+```sh
+jupyter-notebook smollm_entropix_torch.ipynb 
+```
