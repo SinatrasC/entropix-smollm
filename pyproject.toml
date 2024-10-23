@@ -1,7 +1,7 @@
 [project]
 name = "entropix-smollm"
 version = "0.1.0"
-description = "Entropix adapted to the smollm LLM"
+description = "Entropix sampler adapted to the SmolLLM"
 authors = [
     { name = "Sinatras" }
 ]
