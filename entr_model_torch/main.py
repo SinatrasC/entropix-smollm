@@ -246,23 +246,9 @@ class EntropixModel:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
         # Save the interactive plot as HTML
-        interactive_filename = f"entropy_visualization_interactive_{timestamp}.html"
+        interactive_filename = f"token_entropy_visualization_{timestamp}.html"
         fig.write_html(interactive_filename, include_plotlyjs=True, full_html=True)
-        print(f"Interactive visualization saved to {interactive_filename}")
-
-        # Create and save a static version (no buttons/interactivity)
-        static_fig = go.Figure(fig)  # Create a copy
-        static_fig.update_layout(
-            updatemenus=[],  # Remove buttons
-            showlegend=True,
-            annotations=[],
-        )
-        for trace in static_fig.data[2:]:  # Make all threshold planes visible
-            trace.visible = True
-            
-        static_filename = f"entropy_visualization_static_{timestamp}.html"
-        static_fig.write_html(static_filename, include_plotlyjs=True, full_html=True)
-        print(f"Static visualization saved to {static_filename}")
+        print(f"3D token entropy visualization saved to {interactive_filename}")
 
         # Export data to file
         export_data = {
