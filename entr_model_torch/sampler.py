@@ -13,7 +13,6 @@ elif torch.cuda.is_available():
 else:
     device = torch.device("cpu")
 
-
 def multinomial_sample_one(probs_sort: torch.Tensor, generator: torch.Generator) -> torch.Tensor:
     """Samples one token from a multinomial distribution with sorted probabilities."""
     q = torch.rand(probs_sort.shape, generator=generator, device=probs_sort.device)
@@ -191,11 +190,76 @@ def sample(gen_tokens: torch.Tensor, logits: torch.Tensor, attention_scores: tor
     # All other cases: use adaptive sampling
     else:
         sampler_state = SamplerState.ADAPTIVE
-        temperature = 0.666
+        '''temperature = 0.666
         sampled_token = adaptive_sample(
             logits,
             temperature=temperature,
             epsilon=0.1,
             generator=generator
+        )'''
+        logits_uncertainty = ent + vent
+        attn_uncertainty = attn_ent + attn_vent
+
+        temperature = cfg.temperature * (
+            1 +
+            cfg.adaptive_temperature_logits_coefficient * ent +
+            cfg.adaptive_temperature_attention_coefficient * attn_ent -
+            cfg.adaptive_temperature_agreement_coefficient * agreement
         )
+        top_p = torch.clamp(
+            (cfg.top_p * (1 + cfg.adaptive_top_p_coefficient * attn_vent)).clone().detach(),
+            0.1,
+            1.0
+        )
+        top_k = int(torch.clamp(
+            torch.round(torch.tensor(cfg.top_k) * (
+                1 +
+                cfg.adaptive_top_k_interaction_coefficient * interaction_strength.item() -
+                cfg.adaptive_top_k_agreement_coefficient * agreement.item()
+            )),
+            min=1,
+            max=100
+        ).item())
+        min_p = torch.clamp(
+            (cfg.min_p * (1 - cfg.adaptive_min_p_coefficient * vent)).clone().detach(),
+            0.01,
+            0.5
+        )
+
+        samples = []
+        for _ in range(cfg.n_adaptive_samples):
+            sample = _sample(
+                logits,
+                temperature=temperature,
+                top_p=top_p,
+                top_k=top_k,
+                min_p=min_p,
+                generator=generator
+            )
+            samples.append(sample)
+
+        def score_sample(sample):
+            # Ensure sample is a 1D tensor of indices
+            sample_indices = sample.view(-1).to(torch.long)
+
+            # Create one-hot encoding
+            one_hot = F.one_hot(sample_indices, num_classes=logits.shape[-1])
+
+            # Calculate log probability
+            log_probs = F.log_softmax(logits[:, -1], dim=-1)
+            log_prob = torch.sum(log_probs * one_hot, dim=-1)
+
+            confidence_score = (
+                (1 - ent / cfg.high_logits_entropy_threshold) * cfg.adaptive_score_logits_entropy_coefficient +
+                (1 - attn_ent / cfg.high_attention_entropy_threshold) * cfg.adaptive_score_attention_entropy_coefficient +
+                (1 - vent / cfg.high_logits_varentropy_threshold) * cfg.adaptive_score_logits_varentropy_coefficient +
+                (1 - attn_vent / cfg.high_attention_varentropy_threshold) * cfg.adaptive_score_attention_varentropy_coefficient +
+                (agreement / cfg.high_agreement_threshold) * cfg.adaptive_score_agreement_coefficient +
+                (interaction_strength / cfg.high_interaction_strength_threshold) * cfg.adaptive_score_interaction_strength_coefficient
+            )
+            return log_prob + confidence_score
+
+        sample_scores = torch.stack([score_sample(sample) for sample in samples])
+        best_sample_idx = torch.argmax(sample_scores)
+        sampled_token = samples[best_sample_idx]
         return sampled_token, sampler_state
