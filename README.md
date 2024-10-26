@@ -70,3 +70,38 @@ and then:
 ```sh
 jupyter-notebook smollm_entropix_torch.ipynb 
 ```
+
+You could also use the model with torch directly from cli
+follow the uv instalation guide then invoke the following command in your terminal:
+
+```sh
+python3 -m entr_model_torch.main --config.prompt "Which number is larger 9.11 or 9.9? be brief in your response" --config.stream --config.debug
+```
+
+the --help describes the cli args, here is the brief overview:
+
+```sh
+
+python3 -m entr_model_torch.main --help
+
+GenerateConfig Usage:
+--------------------
+Required:
+- prompt (str): The text prompt to generate from
+    Example: --prompt "Which number is larger 9.11 or 9.9? be brief in your response"
+
+Optional:
+- max_tokens (int): How many tokens to generate (1-2048)
+    Default: 600
+    Usage: --config.max_tokens 1000
+- debug: Toggle debug information during generation
+    Default: True
+    Usage: --config.debug or --config.no-debug
+- stream: Toggle output token streaming
+    Default: True
+    Usage: --config.stream or --config.no-stream
+
+Example usage:
+    python3 -m entr_model_torch.main --config.prompt "Which number is larger 9.11 or 9.9? be brief in your response" --config.no-stream --config.debug
+
+```
