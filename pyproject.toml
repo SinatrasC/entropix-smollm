@@ -17,6 +17,7 @@ dependencies = [
     "blobfile>=3.0.0",
     "tiktoken>=0.8.0",
     "accelerate>=1.0.1",
+    "tyro>=0.8.14",
 ]
 readme = "README.md"
 requires-python = ">= 3.12"
