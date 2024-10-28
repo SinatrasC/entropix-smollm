@@ -1,4 +1,5 @@
 import torch
+import pandas as pd
 # Device selection, tree is like first apple silicon, then cuda, fallback is cpu.
 if torch.backends.mps.is_available():
     device = torch.device("mps")
@@ -59,3 +60,43 @@ def build_attn_mask(seqlen: int, start_pos: int) -> torch.Tensor:
       mask = torch.triu(mask, diagonal=1)
       mask = torch.hstack([torch.zeros((seqlen, start_pos)), mask]).to(torch.float32).to(device)
   return mask
+
+def validate_csv(file_path: str) -> bool:
+    """Validate if the CSV file exists and contains a 'prompt' column with string data.
+    
+    Args:
+        file_path: Path to the CSV file
+        
+    Returns:
+        bool: True if valid, False otherwise
+    """
+    try:
+        # Check if file exists and is a CSV
+        if not file_path.endswith('.csv'):
+            print("Error: File must be a CSV file")
+            return False
+            
+        # Try reading the CSV
+        df = pd.read_csv(file_path)
+        
+        # Check if 'prompts' column exists
+        if 'prompts' not in df.columns:
+            print("Error: CSV must contain a 'prompts' column")
+            return False
+            
+        # Check if prompts are strings and not empty
+        if not all(isinstance(x, str) and len(x.strip()) > 0 for x in df['prompts'].dropna()):
+            print("Error: All prompts must be non-empty strings")
+            return False
+            
+        return True
+        
+    except FileNotFoundError:
+        print(f"Error: File {file_path} not found")
+        return False
+    except pd.errors.EmptyDataError:
+        print("Error: CSV file is empty")
+        return False
+    except Exception as e:
+        print(f"Error reading CSV file: {str(e)}")
+        return False

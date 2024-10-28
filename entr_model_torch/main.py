@@ -20,7 +20,10 @@ from pathlib import Path
 from functools import partial
 import tyro
 
-from entr_model_torch.utils import precompute_freqs_cis, build_attn_mask
+import pandas as pd
+import csv
+
+from entr_model_torch.utils import precompute_freqs_cis, build_attn_mask, validate_csv
 from entr_model_torch.weight import download_weights, load_weights
 from entr_model_torch.tokeniser import download_tokenizer, Tokenizer
 from entr_model_torch.kvcache import KVCache
@@ -289,7 +292,7 @@ class EntropixModel:
 
         return fig
 
-    def generate(self, prompt, max_tokens=600, debug=True):
+    def generate(self, prompt, max_tokens=600, debug=True, batch: bool = False):
         # Initialize lists to store metrics
         metrics_data = {
             'logits_entropy': [],
@@ -346,7 +349,8 @@ class EntropixModel:
             #self.debug_visualize_metrics(metrics_data)
             self.visualize_sampler_metrics(metrics_data['logits_entropy'], metrics_data['logits_varentropy'], sampler_states, generated_tokens)
             fig = self.visualize_token_entropy_varentropy(metrics_data, generated_tokens)
-            fig.show()
+            if not batch:
+                fig.show()
         return output
 
     def debug_visualize_metrics(self, metrics_data):
@@ -570,7 +574,7 @@ class EntropixModel:
         
         return fig
 
-    def generate_stream(self, prompt: str, max_tokens: int = 600, debug: bool = True) -> str:
+    def generate_stream(self, prompt: str, max_tokens: int = 600, debug: bool = True, batch: bool = False) -> str:
         """Stream tokens as they're generated.
         
         Args:
@@ -649,7 +653,8 @@ class EntropixModel:
         if debug and len(generated_tokens) > 0:  # Only show visualizations if we have data
             self.visualize_sampler_metrics(metrics_data['logits_entropy'], metrics_data['logits_varentropy'], sampler_states, generated_tokens)
             fig = self.visualize_token_entropy_varentropy(metrics_data, generated_tokens)
-            fig.show()
+            if not batch:
+                fig.show()
 
 # Function to initialize the model (to be run once)
 def initialize_model():
@@ -672,18 +677,58 @@ def generate_text(config: GenerateConfig) -> None:
     if 'entropix_model' not in globals():
         print("Model not initialized. Please run initialize_model() first.")
         return
-    
-    if config.stream:
-        # Stream the response token by token
-        response = ""
-        for token in entropix_model.generate_stream(config.prompt, config.max_tokens, config.debug):
-            print(token, end='', flush=True)
-            response += token
-        print()  # Final newline
+
+    # Handle CSV input if provided
+    if config.csv_file:
+        if not validate_csv(config.csv_file):
+            return
+            
+        df = pd.read_csv(config.csv_file)
+        total_prompts = len(df)
+        
+        print(f"Processing {total_prompts} prompts from CSV file...")
+        
+        # Create output CSV file
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_file = f"generated_responses_{timestamp}.csv"
+        
+        with open(output_file, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            writer.writerow(['prompts', 'response'])
+            
+            for idx, row in df.iterrows():
+                prompt = row['prompts'].strip()
+                print(f"\nProcessing prompt {idx + 1}/{total_prompts}:")
+                print(f"Prompt: {prompt}\n")
+                
+                
+                if config.stream:
+                    response = ""
+                    print("Response: ", end='', flush=True)
+                    for token in entropix_model.generate_stream(prompt, config.max_tokens, config.debug, batch=True):
+                        print(token, end='', flush=True)
+                        response += token
+                    print()  # Final newline
+                else:
+                    response = entropix_model.generate(prompt, config.max_tokens, config.debug, batch=True)
+                    print(f"Response: {response}\n")
+                
+                writer.writerow([prompt, response])
+                
+                
+        print(f"\nAll responses have been saved to {output_file}")
+        
     else:
-        # Generate complete response at once
-        response = entropix_model.generate(config.prompt, config.max_tokens, config.debug)
-        print(response)
+        # Original single prompt behavior
+        if config.stream:
+            response = ""
+            for token in entropix_model.generate_stream(config.prompt, config.max_tokens, config.debug):
+                print(token, end='', flush=True)
+                response += token
+            print()  # Final newline
+        else:
+            response = entropix_model.generate(config.prompt, config.max_tokens, config.debug)
+            print(response)
 
 
 
