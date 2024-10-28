@@ -344,7 +344,7 @@ class EntropixModel:
 
         if debug:
             #self.debug_visualize_metrics(metrics_data)
-            self.visualize_sampler_metrics(metrics_data['logits_entropy'], metrics_data['logits_varentropy'], sampler_states)
+            self.visualize_sampler_metrics(metrics_data['logits_entropy'], metrics_data['logits_varentropy'], sampler_states, generated_tokens)
             fig = self.visualize_token_entropy_varentropy(metrics_data, generated_tokens)
             fig.show()
         return output
@@ -382,26 +382,12 @@ class EntropixModel:
         plt.tight_layout()
         plt.show()
 
-    def visualize_sampler_metrics(self, entropies, varentropies, sampler_states):
+    def visualize_sampler_metrics(self, entropies, varentropies, sampler_states, generated_tokens):
         # Create a plotly figure with subplots
         fig = go.Figure()
         
-        # Add entropy and varentropy traces
-        fig.add_trace(go.Scatter(
-            x=list(range(len(entropies))),
-            y=entropies,
-            name='Entropy',
-            line=dict(color='blue'),
-            yaxis='y1'
-        ))
-        
-        fig.add_trace(go.Scatter(
-            x=list(range(len(varentropies))),
-            y=varentropies,
-            name='Varentropy',
-            line=dict(color='red'),
-            yaxis='y1'
-        ))
+        # Get token texts
+        token_texts = [self.tokenizer.decode([token]) for token in generated_tokens]
         
         # Define colors for sampler states
         colors = {
@@ -412,27 +398,66 @@ class EntropixModel:
             SamplerState.ADAPTIVE: 'purple'
         }
         
-        # Create a heatmap for sampler states
+        # Create unified hover text
+        hover_template = (
+            "Step: %{x}<br>" +
+            "Value: %{y}<br>" +
+            "Token: %{customdata[0]}<br>" +
+            "State: %{customdata[1]}"
+        )
+        
+        # Add entropy trace
+        fig.add_trace(go.Scatter(
+            x=list(range(len(entropies))),
+            y=entropies,
+            name='Entropy',
+            line=dict(color='blue'),
+            yaxis='y1',
+            customdata=list(zip(
+                token_texts if token_texts else [''] * len(entropies),
+                [state.value for state in sampler_states]
+            )),
+            hovertemplate=hover_template
+        ))
+        
+        # Add varentropy trace
+        fig.add_trace(go.Scatter(
+            x=list(range(len(varentropies))),
+            y=varentropies,
+            name='Varentropy',
+            line=dict(color='red'),
+            yaxis='y1',
+            customdata=list(zip(
+                token_texts if token_texts else [''] * len(varentropies),
+                [state.value for state in sampler_states]
+            )),
+            hovertemplate=hover_template
+        ))
+        
+        # Create state indicators
         state_colors = [colors[state] for state in sampler_states]
         state_names = [state.value for state in sampler_states]
         
-        # Replace the heatmap with a scatter plot for discrete states
+        # Add state indicators
         fig.add_trace(go.Scatter(
             x=list(range(len(sampler_states))),
-            y=[0] * len(sampler_states),  # All points at y=0
+            y=[0] * len(sampler_states),
             mode='markers',
             marker=dict(
                 color=state_colors,
                 size=20,
                 symbol='square',
             ),
-            customdata=state_names,
-            hovertemplate='State: %{customdata}<extra></extra>',
+            customdata=list(zip(
+                token_texts if token_texts else [''] * len(sampler_states),
+                state_names
+            )),
+            hovertemplate=hover_template,
             yaxis='y2',
             showlegend=False,
         ))
         
-        # Add a legend for sampler states
+        # Add state legend
         for state, color in colors.items():
             fig.add_trace(go.Scatter(
                 x=[None],
@@ -450,16 +475,22 @@ class EntropixModel:
         # Update layout
         fig.update_layout(
             title='Entropy, Varentropy and Sampler States over Generation Steps',
-            xaxis=dict(title='Generation Step'),
+            xaxis=dict(
+                title='Generation Step',
+                showticklabels=True,
+                tickmode='linear',
+                dtick=5
+            ),
             yaxis=dict(
                 title='Value',
-                domain=[0.3, 1]  # top 70% of the plot
+                domain=[0.25, 0.95]  
             ),
             yaxis2=dict(
-                domain=[0, 0.2],  # bottom 20% of the plot
-                showticklabels=False
+                domain=[0.1, 0.2],  
+                showticklabels=False,
+                range=[-0.5, 0.5]
             ),
-            height=600,
+            height=1000,
             showlegend=True,
             legend=dict(
                 yanchor="bottom",
@@ -470,13 +501,74 @@ class EntropixModel:
             )
         )
         
-        # Generate timestamp for unique filename
+        # Add tokens
+        formatted_text = ""
+        line_length = 0
+        max_line_length = 275
+        
+        for token, state in zip(token_texts, sampler_states):
+            color = colors[state]
+            token_text = f"<span style='color: {color}'>{token}</span> "
+            
+            # Add newline if current line would be too long
+            if line_length + len(token) > max_line_length:
+                formatted_text += "<br>"
+                line_length = 0
+            
+            formatted_text += token_text
+            line_length += len(token) + 1  # +1 for the space
+        
+        # Add a box first (as background)
+        fig.add_shape(
+            type="rect",
+            xref="paper",
+            yref="paper",
+            x0=-0.01,  
+            y0=-0.01,
+            x1=1.01,
+            y1=0.08,  
+            line=dict(
+                color="gray",
+                width=1,
+            ),
+            fillcolor="white",
+            opacity=0.95
+        )
+        
+        # Add the text on top of the box
+        fig.add_annotation(
+            text=formatted_text,
+            xref="paper",
+            yref="paper",
+            x=0,
+            y=0.07,  
+            showarrow=False,
+            font=dict(size=12),
+            align="left",
+            xanchor="left",
+            yanchor="top",
+            xshift=10,
+            yshift=0, 
+            bordercolor="gray",
+            borderwidth=0,  
+        )
+        
+        num_lines = formatted_text.count('<br>') + 1
+        bottom_margin = max(30, num_lines * 15)  
+        
+        fig.update_layout(
+            margin=dict(b=bottom_margin),
+            yaxis=dict(domain=[0.25, 0.95]),  
+            yaxis2=dict(domain=[0.1, 0.2])   
+        )
+        
+        # Generate timestamp and save
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"sampler_metrics_{timestamp}.html"
-        
-        # Save the plot
         fig.write_html(filename, include_plotlyjs=True, full_html=True)
         print(f"Sampler metrics visualization saved to {filename}")
+        
+        return fig
 
     def generate_stream(self, prompt: str, max_tokens: int = 600, debug: bool = True) -> str:
         """Stream tokens as they're generated.
@@ -555,7 +647,7 @@ class EntropixModel:
                     break
 
         if debug and len(generated_tokens) > 0:  # Only show visualizations if we have data
-            self.visualize_sampler_metrics(metrics_data['logits_entropy'], metrics_data['logits_varentropy'], sampler_states)
+            self.visualize_sampler_metrics(metrics_data['logits_entropy'], metrics_data['logits_varentropy'], sampler_states, generated_tokens)
             fig = self.visualize_token_entropy_varentropy(metrics_data, generated_tokens)
             fig.show()
 
