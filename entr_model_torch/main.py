@@ -508,7 +508,7 @@ class EntropixModel:
         # Add tokens
         formatted_text = ""
         line_length = 0
-        max_line_length = 275
+        max_line_length = 270 #some longer prompt overflow for some reason, keep it 270 for now
         
         for token, state in zip(token_texts, sampler_states):
             color = colors[state]
@@ -522,24 +522,8 @@ class EntropixModel:
             formatted_text += token_text
             line_length += len(token) + 1  # +1 for the space
         
-        # Add a box first (as background)
-        fig.add_shape(
-            type="rect",
-            xref="paper",
-            yref="paper",
-            x0=-0.01,  
-            y0=-0.01,
-            x1=1.01,
-            y1=0.08,  
-            line=dict(
-                color="gray",
-                width=1,
-            ),
-            fillcolor="white",
-            opacity=0.95
-        )
         
-        # Add the text on top of the box
+        # Add the text
         fig.add_annotation(
             text=formatted_text,
             xref="paper",
@@ -551,7 +535,7 @@ class EntropixModel:
             align="left",
             xanchor="left",
             yanchor="top",
-            xshift=10,
+            xshift=5,
             yshift=0, 
             bordercolor="gray",
             borderwidth=0,  
