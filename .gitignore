@@ -13,3 +13,6 @@ wheels/
 weights/
 tokenizer.json
 .ipynb_checkpoints/
+
+# examples
+docs/
