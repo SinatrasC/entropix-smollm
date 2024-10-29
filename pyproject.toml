@@ -18,6 +18,7 @@ dependencies = [
     "tiktoken>=0.8.0",
     "accelerate>=1.0.1",
     "tyro>=0.8.14",
+    "pandas>=2.2.3",
 ]
 readme = "README.md"
 requires-python = ">= 3.12"
