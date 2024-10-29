@@ -13,6 +13,10 @@ To enable export of varentropy&entropy stats for attention and logits remove com
 
 <img width="650" alt="smolLMxEntropix" src="https://github.com/user-attachments/assets/a7b1834b-4cd3-490b-983d-2479dc53c9e2">
 
+## Test Visualizations
+- [Sampler States and Output](https://sinatrasc.github.io/entropix-smollm/sampler)
+- [3D Entropy&Varentropy](https://sinatrasc.github.io/entropix-smollm/)
+
 ## 3D Entropy&Varentropy Chart
 New 3D chart lets user see how their response is formed, includes varentropy&entropy stats for attention and logits
 
