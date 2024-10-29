@@ -78,6 +78,11 @@ follow the uv instalation guide then invoke the following command in your termin
 python3 -m entr_model_torch.main --config.prompt "Which number is larger 9.11 or 9.9? be brief in your response" --config.stream --config.debug
 ```
 
+You could also batch process prompts with the following example command:
+```sh
+python3 -m entr_model_torch.main --config.csv_file "prompts.csv" --config.no-stream --config.debug
+```
+
 the --help describes the cli args, here is the brief overview:
 
 ```sh
@@ -88,7 +93,10 @@ GenerateConfig Usage:
 --------------------
 Required:
 - prompt (str): The text prompt to generate from
-    Example: --prompt "Which number is larger 9.11 or 9.9? be brief in your response"
+    Example: --config.prompt "Once upon a time"
+OR
+- csv_file (str): path to csv file containing string prompts with column header 'prompts'
+    Example: --config.csv_file "prompts.csv"
 
 Optional:
 - max_tokens (int): How many tokens to generate (1-2048)
@@ -102,6 +110,8 @@ Optional:
     Usage: --config.stream or --config.no-stream
 
 Example usage:
-    python3 -m entr_model_torch.main --config.prompt "Which number is larger 9.11 or 9.9? be brief in your response" --config.no-stream --config.debug
+    python3 -m entr_model_torch.main --config.prompt "Which number is larger 9.11 or 9.9? be brief in your response" --config.stream --config.debug
+    or
+    python3 -m entr_model_torch.main --config.csv_file "prompts.csv" --config.no-stream --config.debug
 
 ```

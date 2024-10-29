@@ -15,18 +15,22 @@ class GenerateConfig:
             Defaults to True.
         stream (bool, optional): Stream tokens as they're generated.
             Defaults to True.
+        csv_file (str, optional): Path to CSV file containing prompts.
+            Defaults to None.
     """
-    prompt: str
+    prompt: str = "Tell me a joke"
     max_tokens: Optional[int] = 600
     debug: bool = True
     stream: bool = True
+    csv_file: Optional[str] = None
 
     def __post_init__(self):
         """Validate inputs after initialization."""
-        if not isinstance(self.prompt, str):
-            raise ValueError("prompt must be a string")
-        if not self.prompt.strip():
-            raise ValueError("prompt cannot be empty")
+        if self.csv_file is None:
+            if not isinstance(self.prompt, str):
+                raise ValueError("prompt must be a string")
+            if not self.prompt.strip():
+                raise ValueError("prompt cannot be empty")
             
         if self.max_tokens is not None:
             if not isinstance(self.max_tokens, int):
@@ -42,7 +46,10 @@ GenerateConfig Usage:
 --------------------
 Required:
 - prompt (str): The text prompt to generate from
-    Example: --prompt "Once upon a time"
+    Example: --config.prompt "Once upon a time"
+OR
+- csv file (str): path to csv file containing string prompts with column header 'prompts'
+    Example: --config.csv_file "prompts.csv"
 
 Optional:
 - max_tokens (int): How many tokens to generate (1-2048)
@@ -57,6 +64,8 @@ Optional:
 
 Example usage:
     python3 -m entr_model_torch.main --config.prompt "Which number is larger 9.11 or 9.9? be brief in your response" --config.no-stream --config.debug
+    or
+    python3 -m entr_model_torch.main --config.csv_file "prompts.csv" --config.stream --config.debug
 """
 
 class EntropixConfig:
