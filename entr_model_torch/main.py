@@ -494,7 +494,7 @@ class EntropixModel:
                 showticklabels=False,
                 range=[-0.5, 0.5]
             ),
-            height=1000,
+            height=750,
             showlegend=True,
             legend=dict(
                 yanchor="bottom",
@@ -508,7 +508,7 @@ class EntropixModel:
         # Add tokens
         formatted_text = ""
         line_length = 0
-        max_line_length = 270 #some longer prompt overflow for some reason, keep it 270 for now
+        max_line_length = 180 #some longer prompt overflow for some reason, keep it 270 for now
         
         for token, state in zip(token_texts, sampler_states):
             color = colors[state]
@@ -531,7 +531,7 @@ class EntropixModel:
             x=0,
             y=0.07,  
             showarrow=False,
-            font=dict(size=12),
+            font=dict(size=20),
             align="left",
             xanchor="left",
             yanchor="top",
