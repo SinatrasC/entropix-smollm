@@ -111,7 +111,7 @@ class ModelParams(NamedTuple):
   rope_theta: float
   use_scaled_rope: bool
 
-MODEL_ID = 'HuggingFaceTB/SmolLM-360M-Instruct'
+MODEL_ID = 'HuggingFaceTB/SmolLM2-360M-Instruct'
 MODEL_PATH = 'weights/360M-Instruct'
 
 SMOLLM_360M_PARAMS = ModelParams(
@@ -132,21 +132,21 @@ class SamplerConfig:
         self.top_k = 27
         self.min_p = 0.03
 
-        self.low_logits_entropy_threshold = 0.6
-        self.medium_logits_entropy_threshold = 1.584
-        self.high_logits_entropy_threshold = 2.17
+        self.low_logits_entropy_threshold = 0.5
+        self.medium_logits_entropy_threshold = 1.484
+        self.high_logits_entropy_threshold = 2.07
 
-        self.low_logits_varentropy_threshold = 3.28
-        self.medium_logits_varentropy_threshold = 3.85
-        self.high_logits_varentropy_threshold = 6.18
+        self.low_logits_varentropy_threshold = 1.28
+        self.medium_logits_varentropy_threshold = 3.75
+        self.high_logits_varentropy_threshold = 6.08
 
-        self.low_attention_entropy_threshold = 8.989
-        self.medium_attention_entropy_threshold = 8.99
-        self.high_attention_entropy_threshold = 8.991
+        self.low_attention_entropy_threshold = 5.875
+        self.medium_attention_entropy_threshold = 6.125
+        self.high_attention_entropy_threshold = 6.415
 
-        self.low_attention_varentropy_threshold = 5.212
-        self.medium_attention_varentropy_threshold = 5.9125
-        self.high_attention_varentropy_threshold = 6.92
+        self.low_attention_varentropy_threshold = 7.125
+        self.medium_attention_varentropy_threshold = 7.6
+        self.high_attention_varentropy_threshold = 8.25
 
         self.low_agreement_threshold = 2e-06
         self.medium_agreement_threshold = 4e-06
