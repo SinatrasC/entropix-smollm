@@ -1,5 +1,5 @@
 # entropix-smollm
-## smolLM with Entropix sampler on pytorch
+## SmolLM2 with Entropix sampler on pytorch
 
 This notebook has Entropix Sampler implementation by Sinatras [@myainotez](https://x.com/myainotez)
 
@@ -10,6 +10,8 @@ There are 2 different SamplerConfigs included, both are experimental one of them
 To disable charts set ```debug=False``` in EntropixModel class
 
 To enable export of varentropy&entropy stats for attention and logits remove comment on ```export_data``` function
+
+SmolLM2 higher context tuned thresholds are wip
 
 <img width="650" alt="smolLMxEntropix" src="https://github.com/user-attachments/assets/a7b1834b-4cd3-490b-983d-2479dc53c9e2">
 
